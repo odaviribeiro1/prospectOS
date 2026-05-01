@@ -15,6 +15,17 @@ export type LeadStatus =
   | 'negative_response'
   | 'converted'
 
+// ---- Profile / Roles ----------------------------------------
+export type UserRole = 'gestor' | 'operacional'
+
+export interface Profile {
+  id: string
+  role: UserRole
+  display_name: string | null
+  created_at: string
+  updated_at: string
+}
+
 // ---- Settings -----------------------------------------------
 export interface Settings {
   id: string
