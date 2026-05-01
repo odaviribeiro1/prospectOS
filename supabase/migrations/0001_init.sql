@@ -564,12 +564,23 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.get_dashboard_data(UUID, TIMESTAMPTZ) TO authenticated;
 
 -- ============================================================
--- REALTIME
+-- REALTIME (idempotente — pula se a tabela já está na publication)
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE public.email_sends;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.batches;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.follow_up_enrollments;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.follow_up_activity_log;
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN SELECT unnest(ARRAY['email_sends','batches','follow_up_enrollments','follow_up_activity_log']) LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime'
+        AND schemaname = 'public'
+        AND tablename = t
+    ) THEN
+      EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', t);
+    END IF;
+  END LOOP;
+END $$;
 
 -- ============================================================
 -- VERIFICAÇÃO FINAL

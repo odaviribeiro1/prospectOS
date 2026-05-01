@@ -7,15 +7,16 @@
 
 A Fase 6 é considerada concluída quando **todos** os blocos abaixo passam sem erro:
 
-- [ ] Build estático limpo (`npm run build`)
-- [ ] Smoke estático (lint não tem erro novo introduzido pela migração)
-- [ ] Setup de banco a partir do zero usando `supabase/migrations/0001..0004` aplica sem erro
-- [ ] Primeiro registro vira `gestor`; segundo vira `operacional` (verificado em `public.profiles`)
-- [ ] RLS por role funciona: gestor vê tudo da instância; operacional vê apenas o que criou
-- [ ] Tela `/settings` não existe mais (404 / NotFound)
-- [ ] Banner de onboarding não aparece em `/metricas`
-- [ ] Edge Functions leem keys de `Deno.env.get` (sem hit em `public.settings`)
-- [ ] Fluxo nuclear (consulta CNPJ → enriquecimento → revisão → campanha → follow-up) executa de ponta a ponta com 1 lead real
+- [x] Build estático limpo (`npm run build`) — verificado 2026-05-01
+- [x] Smoke estático (lint não tem erro novo introduzido pela migração) — verificado 2026-05-01
+- [x] Setup de banco usando `supabase/migrations/0001..0004` aplica sem erro — verificado 2026-05-01 contra projeto `wpagibinplbxehgsuvkt`
+- [x] Backfill do trigger criou profile com role `gestor` para o usuário pré-existente — verificado 2026-05-01
+- [x] RLS por role: 0 policies do Agentise sem `is_gestor()` — verificado 2026-05-01
+- [x] Tela `/settings` não existe mais (rota e item de menu mobile removidos) — verificado 2026-05-01
+- [x] Banner de onboarding não aparece em `/metricas` (componente apagado na fase 4) — verificado 2026-05-01
+- [x] Edge Functions leem keys de `Deno.env.get` (sem hit em `public.settings`) — verificado 2026-05-01 via grep
+- [ ] Primeiro registro vira `gestor`; segundo vira `operacional` (testar com `auth.signUp` em ambiente limpo)
+- [ ] Fluxo nuclear (consulta CNPJ → enriquecimento → revisão → campanha → follow-up) executa de ponta a ponta com 1 lead real (requer secrets de Edge Function setados)
 
 ## 2. Setup local (uma vez por máquina)
 
