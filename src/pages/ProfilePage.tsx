@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, Save, LogOut, Download, Trash2 } from 'lucide-react'
+import { Loader2, Save, LogOut, Download, Trash2, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '../components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
@@ -8,10 +8,13 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Separator } from '../components/ui/separator'
+import { Badge } from '../components/ui/badge'
 import { supabase } from '../lib/supabase'
+import { useProfile } from '../hooks/useProfile'
 
 export function ProfilePage() {
   const navigate = useNavigate()
+  const { profile, isLoading: isProfileLoading, isGestor } = useProfile()
   const [email, setEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -131,6 +134,26 @@ export function ProfilePage() {
             <Label>E-mail</Label>
             <Input value={email} readOnly className="bg-muted cursor-not-allowed" />
             <p className="text-xs text-muted-foreground">O e-mail não pode ser alterado</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Seu papel</Label>
+            <div className="flex items-center gap-2">
+              {isProfileLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              ) : profile ? (
+                <Badge variant={isGestor ? 'info' : 'secondary'} className="gap-1">
+                  <Shield className="h-3 w-3" />
+                  {isGestor ? 'Gestor' : 'Operacional'}
+                </Badge>
+              ) : (
+                <Badge variant="outline">Indefinido</Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {isGestor
+                ? 'Você enxerga todos os dados da instância.'
+                : 'Você enxerga apenas os dados que criou.'}
+            </p>
           </div>
         </CardContent>
       </Card>

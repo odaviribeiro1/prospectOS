@@ -560,13 +560,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Permissão para usuários autenticados chamarem via RPC
+GRANT EXECUTE ON FUNCTION public.get_dashboard_data(UUID, TIMESTAMPTZ) TO authenticated;
+
 -- ============================================================
--- REALTIME
+-- REALTIME (idempotente — pula se a tabela já está na publication)
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE public.email_sends;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.batches;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.follow_up_enrollments;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.follow_up_activity_log;
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN SELECT unnest(ARRAY['email_sends','batches','follow_up_enrollments','follow_up_activity_log']) LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime'
+        AND schemaname = 'public'
+        AND tablename = t
+    ) THEN
+      EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', t);
+    END IF;
+  END LOOP;
+END $$;
 
 -- ============================================================
 -- VERIFICAÇÃO FINAL
@@ -623,36 +637,3 @@ SELECT cron.schedule(
 -- Remover job (se necessário):
 -- SELECT cron.unschedule('chatwoot-poll-every-minute');
 */
-
--- ============================================================
--- FASE 4 — RPC get_dashboard_data (executar no SQL Editor)
--- Otimiza o dashboard com uma única chamada ao banco
--- ============================================================
-
-CREATE OR REPLACE FUNCTION public.get_dashboard_data(
-  p_user_id UUID,
-  p_start_date TIMESTAMPTZ DEFAULT NOW() - INTERVAL '30 days'
-)
-RETURNS JSONB AS $$
-DECLARE
-  result JSONB;
-BEGIN
-  SELECT jsonb_build_object(
-    'total_companies',       (SELECT COUNT(*) FROM companies WHERE user_id = p_user_id AND created_at >= p_start_date),
-    'qualified_companies',   (SELECT COUNT(*) FROM companies WHERE user_id = p_user_id AND qualified = true AND created_at >= p_start_date),
-    'total_enriched_leads',  (SELECT COUNT(*) FROM enriched_leads WHERE user_id = p_user_id AND status != 'rejected' AND created_at >= p_start_date),
-    'total_campaigns',       (SELECT COUNT(*) FROM email_campaigns WHERE user_id = p_user_id AND status = 'completed' AND sent_at >= p_start_date),
-    'total_sent',            (SELECT COALESCE(SUM(sent_count), 0) FROM email_campaigns WHERE user_id = p_user_id AND sent_at >= p_start_date),
-    'total_delivered',       (SELECT COALESCE(SUM(delivered_count), 0) FROM email_campaigns WHERE user_id = p_user_id AND sent_at >= p_start_date),
-    'total_opened',          (SELECT COALESCE(SUM(opened_count), 0) FROM email_campaigns WHERE user_id = p_user_id AND sent_at >= p_start_date),
-    'total_replied',         (SELECT COALESCE(SUM(replied_count), 0) FROM email_campaigns WHERE user_id = p_user_id AND sent_at >= p_start_date),
-    'total_bounced',         (SELECT COALESCE(SUM(bounced_count), 0) FROM email_campaigns WHERE user_id = p_user_id AND sent_at >= p_start_date),
-    'pending_follow_ups',    (SELECT COUNT(*) FROM follow_up_enrollments WHERE user_id = p_user_id AND status = 'active' AND next_step_due_at <= NOW()),
-    'active_enrollments',    (SELECT COUNT(*) FROM follow_up_enrollments WHERE user_id = p_user_id AND status = 'active')
-  ) INTO result;
-  RETURN result;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Permissão para usuários autenticados chamarem via RPC
-GRANT EXECUTE ON FUNCTION public.get_dashboard_data(UUID, TIMESTAMPTZ) TO authenticated;

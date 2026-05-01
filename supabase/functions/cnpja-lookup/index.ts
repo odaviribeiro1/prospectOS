@@ -30,15 +30,12 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { cnpj, test } = body
 
-    // Buscar API key do usuário
-    const { data: settings, error: settingsErr } = await supabase
-      .from('settings')
-      .select('cnpja_api_key')
-      .eq('user_id', user.id)
-      .single()
-
-    if (settingsErr || !settings?.cnpja_api_key) {
-      return new Response(JSON.stringify({ error: 'API key do CNPJá não configurada' }), { status: 400, headers: corsHeaders })
+    const cnpjaApiKey = Deno.env.get('CNPJA_API_KEY')
+    if (!cnpjaApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'CNPJA_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        { status: 500, headers: corsHeaders }
+      )
     }
 
     const cleanCnpj = cnpj.replace(/\D/g, '')
@@ -46,7 +43,7 @@ Deno.serve(async (req) => {
     // Testar conexão
     if (test) {
       const testRes = await fetch(`https://api.cnpja.com/office/${cleanCnpj}`, {
-        headers: { 'Authorization': settings.cnpja_api_key },
+        headers: { 'Authorization': cnpjaApiKey },
       })
       if (!testRes.ok && testRes.status !== 404) {
         const err = await testRes.text()
@@ -57,7 +54,7 @@ Deno.serve(async (req) => {
 
     // Consultar CNPJ
     const response = await fetch(`https://api.cnpja.com/office/${cleanCnpj}`, {
-      headers: { 'Authorization': settings.cnpja_api_key },
+      headers: { 'Authorization': cnpjaApiKey },
     })
 
     const rateLimitRemaining = response.headers.get('x-ratelimit-remaining')

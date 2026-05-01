@@ -1,12 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  Search, Building2, List, BarChart3, Mail, Settings,
+  Search, Building2, List, BarChart3, Mail,
   Target, ChevronLeft, ChevronRight, LogOut, Forward, User,
   Sun, Moon,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../stores/appStore'
-import { useSettings } from '../../hooks/useSettings'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -26,30 +25,15 @@ const menuItems = [
 ]
 
 const bottomItems = [
-  { icon: Settings, label: 'Configurações', path: '/settings' },
   { icon: User, label: 'Meu Perfil', path: '/perfil' },
 ]
-
-function IntegrationDot({ configured, label }: { configured: boolean; label: string }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className={`h-2 w-2 rounded-full ${configured ? 'bg-emerald-400' : 'bg-red-400'}`} />
-      </TooltipTrigger>
-      <TooltipContent side="top" className="text-xs">
-        {label}: {configured ? 'configurado' : 'não configurado'}
-      </TooltipContent>
-    </Tooltip>
-  )
-}
 
 export function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useAppStore()
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState('')
   const { data: pendingCount = 0 } = usePendingCount()
-  const { settings } = useSettings()
-  
+
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'))
 
   const toggleTheme = () => {
@@ -83,13 +67,6 @@ export function Sidebar() {
   }
 
   const initials = userEmail ? userEmail.slice(0, 2).toUpperCase() : '?'
-
-  const integrations = [
-    { key: 'cnpja', configured: !!settings?.cnpja_api_key, label: 'CNPJá' },
-    { key: 'apollo', configured: !!settings?.apollo_api_key, label: 'Apollo' },
-    { key: 'resend', configured: !!settings?.resend_api_key, label: 'Resend' },
-    { key: 'chatwoot', configured: !!(settings?.chatwoot_url && settings?.chatwoot_api_token), label: 'Chatwoot' },
-  ]
 
   const allItems = [...menuItems, ...bottomItems]
 
@@ -168,21 +145,6 @@ export function Sidebar() {
 
         {/* Footer */}
         <div className="p-2 border-t border-sidebar-border space-y-2">
-          {/* Integration indicators */}
-          {sidebarOpen && (
-            <div
-              className="flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-md hover:bg-sidebar-accent transition-colors"
-              onClick={() => navigate('/settings')}
-            >
-              <span className="text-[10px] text-sidebar-muted-foreground uppercase tracking-wider flex-1">Integrações</span>
-              <div className="flex gap-1.5">
-                {integrations.map(i => (
-                  <IntegrationDot key={i.key} configured={i.configured} label={i.label} />
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}

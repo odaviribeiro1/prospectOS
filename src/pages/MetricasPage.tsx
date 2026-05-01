@@ -8,9 +8,7 @@ import { ProspectionFunnel } from '../components/dashboard/ProspectionFunnel'
 import { RecentActivity } from '../components/dashboard/RecentActivity'
 import { PendingFollowUpsSummary } from '../components/dashboard/PendingFollowUpsSummary'
 import { CampaignPerformanceTable } from '../components/dashboard/CampaignPerformanceTable'
-import { OnboardingBanner } from '../components/dashboard/OnboardingBanner'
 import { useDashboard, useRecentDashboardActivity, useCampaignPerformance, type DashboardPeriod } from '../hooks/useDashboard'
-import { useOnboarding } from '../hooks/useOnboarding'
 
 const PERIOD_LABELS: Record<DashboardPeriod, string> = {
   '7d': 'Últimos 7 dias',
@@ -25,7 +23,6 @@ export function MetricasPage() {
   const { data: dashData, isLoading } = useDashboard(period)
   const { data: activity = [], isLoading: activityLoading } = useRecentDashboardActivity()
   const { data: campaigns = [], isLoading: campaignsLoading } = useCampaignPerformance(period)
-  const { data: onboarding } = useOnboarding()
 
   const isEmpty = !isLoading && (dashData?.total_companies ?? 0) === 0
 
@@ -47,10 +44,6 @@ export function MetricasPage() {
           </SelectContent>
         </Select>
       </div>
-
-      {onboarding && !onboarding.isComplete && (
-        <OnboardingBanner status={onboarding} />
-      )}
 
       {isEmpty ? (
         <EmptyState

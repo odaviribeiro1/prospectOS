@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Menu, X, Search, Building2, List, BarChart3, Mail,
-  Settings, Target, Forward, LogOut, User,
+  Target, Forward, LogOut, User,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { Button } from '../ui/button'
@@ -18,7 +18,6 @@ const menuItems = [
   { icon: List, label: 'Listas', path: '/listas' },
   { icon: Mail, label: 'Campanhas', path: '/campanhas' },
   { icon: Forward, label: 'Follow-ups', path: '/follow-ups' },
-  { icon: Settings, label: 'Configurações', path: '/settings' },
   { icon: User, label: 'Meu Perfil', path: '/perfil' },
 ]
 

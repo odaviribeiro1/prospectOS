@@ -14,19 +14,6 @@ export const registerSchema = z.object({
   path: ['confirmPassword'],
 })
 
-export const settingsSchema = z.object({
-  cnpja_api_key: z.string().optional().nullable(),
-  apollo_api_key: z.string().optional().nullable(),
-  resend_api_key: z.string().optional().nullable(),
-  resend_from_email: z.string().email('E-mail inválido').optional().nullable().or(z.literal('')),
-  resend_from_name: z.string().optional().nullable(),
-  chatwoot_url: z.string().url('URL inválida').optional().nullable().or(z.literal('')),
-  chatwoot_api_token: z.string().optional().nullable(),
-  chatwoot_account_id: z.preprocess((v) => (v === '' || v == null ? undefined : Number(v)), z.number().optional().nullable()),
-  chatwoot_inbox_id: z.preprocess((v) => (v === '' || v == null ? undefined : Number(v)), z.number().optional().nullable()),
-  whatsapp_link: z.string().url('URL inválida').optional().nullable().or(z.literal('')),
-})
-
 export const batchSchema = z.object({
   name: z.string().min(1, 'Nome do lote é obrigatório'),
   cnpjs: z.array(z.string()).min(1, 'Adicione pelo menos 1 CNPJ'),
@@ -48,5 +35,4 @@ export type CampaignForm = z.infer<typeof campaignSchema>
 
 export type LoginForm = z.infer<typeof loginSchema>
 export type RegisterForm = z.infer<typeof registerSchema>
-export type SettingsForm = z.infer<typeof settingsSchema>
 export type BatchForm = z.infer<typeof batchSchema>

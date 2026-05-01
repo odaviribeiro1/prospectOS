@@ -18,7 +18,10 @@ import { Skeleton } from '../components/ui/skeleton'
 import { campaignSchema, type CampaignForm } from '../lib/validators'
 import { useCreateCampaign, useUpdateCampaign, useCampaign, useSendCampaign } from '../hooks/useCampaigns'
 import { useLeadLists, useLeads } from '../hooks/useLeadLists'
-import { useSettings } from '../hooks/useSettings'
+
+const DEFAULT_FROM_NAME = import.meta.env.VITE_RESEND_FROM_NAME ?? ''
+const DEFAULT_FROM_EMAIL = import.meta.env.VITE_RESEND_FROM_EMAIL ?? ''
+const DEFAULT_WHATSAPP_LINK = import.meta.env.VITE_WHATSAPP_LINK ?? ''
 
 export function CampaignCreatePage() {
   const { id } = useParams<{ id: string }>()
@@ -27,7 +30,6 @@ export function CampaignCreatePage() {
 
   const { data: campaign, isLoading: loadingCampaign } = useCampaign(id)
   const { data: lists = [] } = useLeadLists()
-  const { settings } = useSettings()
   const { mutateAsync: createCampaign, isPending: isCreating } = useCreateCampaign()
   const { mutateAsync: updateCampaign, isPending: isUpdating } = useUpdateCampaign()
   const { mutateAsync: sendCampaign } = useSendCampaign()
@@ -44,11 +46,11 @@ export function CampaignCreatePage() {
     defaultValues: {
       name: '',
       list_id: '',
-      from_name: '',
-      from_email: '',
+      from_name: DEFAULT_FROM_NAME,
+      from_email: DEFAULT_FROM_EMAIL,
       subject: '',
       body_template: '',
-      whatsapp_link: '',
+      whatsapp_link: DEFAULT_WHATSAPP_LINK,
     },
   })
 
@@ -61,14 +63,6 @@ export function CampaignCreatePage() {
   const fromName = watch('from_name')
   const fromEmail = watch('from_email')
   const whatsappLink = watch('whatsapp_link') ?? ''
-
-  useEffect(() => {
-    if (settings && !isEditing) {
-      setValue('from_name', settings.resend_from_name ?? '')
-      setValue('from_email', settings.resend_from_email ?? '')
-      setValue('whatsapp_link', settings.whatsapp_link ?? '')
-    }
-  }, [settings, isEditing, setValue])
 
   useEffect(() => {
     if (campaign && isEditing) {

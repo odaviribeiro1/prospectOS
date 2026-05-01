@@ -14,7 +14,6 @@ const ConsultaPage = lazy(() => import('../pages/ConsultaPage').then(m => ({ def
 const EmpresasPage = lazy(() => import('../pages/EmpresasPage').then(m => ({ default: m.EmpresasPage })))
 const ListasPage = lazy(() => import('../pages/ListasPage').then(m => ({ default: m.ListasPage })))
 const LeadReviewPage = lazy(() => import('../pages/LeadReviewPage').then(m => ({ default: m.LeadReviewPage })))
-const SettingsPage = lazy(() => import('../pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const CampanhasPage = lazy(() => import('../pages/CampanhasPage').then(m => ({ default: m.CampanhasPage })))
 const CampaignCreatePage = lazy(() => import('../pages/CampaignCreatePage').then(m => ({ default: m.CampaignCreatePage })))
 const CampaignDetailPage = lazy(() => import('../pages/CampaignDetailPage').then(m => ({ default: m.CampaignDetailPage })))
@@ -52,7 +51,6 @@ export const router = createBrowserRouter([
       { path: 'empresas', element: <LazyRoute element={<EmpresasPage />} /> },
       { path: 'listas', element: <LazyRoute element={<ListasPage />} /> },
       { path: 'listas/:id', element: <LazyRoute element={<LeadReviewPage />} /> },
-      { path: 'settings', element: <LazyRoute element={<SettingsPage />} /> },
       { path: 'campanhas', element: <LazyRoute element={<CampanhasPage />} /> },
       { path: 'campanhas/nova', element: <LazyRoute element={<CampaignCreatePage />} /> },
       { path: 'campanhas/:id', element: <LazyRoute element={<CampaignDetailPage />} /> },
