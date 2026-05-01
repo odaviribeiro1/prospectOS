@@ -32,7 +32,7 @@ cp .env.example .env.local
 # Edite .env.local com sua VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
 
 # 4. Execute o banco de dados
-# Acesse o SQL Editor do Supabase e cole o conteúdo de database.sql
+# Acesse o SQL Editor do Supabase e cole o conteúdo de supabase/migrations/0001_init.sql
 
 # 5. Configure as Edge Functions (opcional para desenvolvimento local)
 supabase functions serve
@@ -67,7 +67,7 @@ Configure no Dashboard do Supabase (Settings > Edge Functions > Environment Vari
 
 ### Scheduler (pg_cron)
 
-Para ativar o polling automático do Chatwoot, execute o script de scheduler ao final do `database.sql` no SQL Editor do Supabase.
+Para ativar o polling automático do Chatwoot, execute o script de scheduler ao final do `supabase/migrations/0001_init.sql` no SQL Editor do Supabase.
 
 ## Variáveis de Ambiente
 
