@@ -2,11 +2,20 @@
 
 ## Sobre o Projeto
 
-Agentise Leads é uma plataforma de prospecção outbound B2B que cobre o ciclo completo: consulta de CNPJ em lote, enriquecimento de leads via Apollo.io, disparo manual de e-mails via Resend, integração com Chatwoot para gestão de respostas e sequências de follow-up automatizadas.
+Agentise Leads é um **boilerplate open source self-hosted** de prospecção outbound B2B mantido pela Agentise. Cobre o ciclo completo: consulta de CNPJ em lote, enriquecimento de leads via Apollo.io, disparo manual de e-mails via Resend, integração com Chatwoot para gestão de respostas e sequências de follow-up automatizadas. Cada instância pertence a um único cliente — não há multi-tenancy, billing nem white-label dinâmico.
 
-**Empresa:** Agentise (agentise.com.br)
-**Responsável:** Davi
+**Mantenedor:** Agentise (agentise.com.br) — Davi
+**Modelo:** open source self-hosted (uma instância = um cliente)
 **Idioma da interface:** Português Brasileiro (PT-BR) — toda label, placeholder, mensagem de erro, toast e texto da UI deve estar em português.
+
+### Roles
+
+A instância tem dois níveis de acesso, definidos no enum `public.user_role`:
+
+- **`gestor`** — vê e edita todos os dados da instância. O **primeiro usuário** registrado vira `gestor` automaticamente via trigger `handle_new_user`.
+- **`operacional`** — vê e edita apenas as linhas que ele criou (`auth.uid() = user_id`).
+
+Toda policy RLS segue o padrão `auth.uid() = user_id OR public.is_gestor()`. Promoção/rebaixamento é feito manualmente via SQL (`UPDATE public.profiles SET role = 'gestor' WHERE id = '<uuid>'`) — não há UI de administração de usuários.
 
 ---
 
@@ -76,7 +85,7 @@ src/
 │   ├── leads/           # Componentes de listas e leads
 │   ├── campaigns/       # Componentes de campanhas de email
 │   ├── followup/        # Componentes de follow-up
-│   └── settings/        # Componentes de configurações
+│   └── dashboard/       # Componentes do dashboard
 ├── pages/               # Páginas (uma por rota)
 ├── hooks/               # Custom hooks (um por domínio)
 ├── lib/                 # Clientes, utils, validators
@@ -91,11 +100,14 @@ src/
 supabase/functions/
 ├── cnpja-lookup/        # Proxy para API CNPJá
 ├── apollo-enrich/       # Enriquecimento via Apollo.io
-├── resend-send/         # Disparo de email via Resend (Fase 2)
-├── resend-webhook/      # Webhook de eventos Resend (Fase 2)
-├── chatwoot-sync/       # Polling de labels Chatwoot (Fase 3)
-└── follow-up-checker/   # Verificação de follow-ups pendentes (Fase 3)
+├── resend-send/         # Disparo de email via Resend
+├── resend-webhook/      # Webhook de eventos Resend
+├── chatwoot-test/       # Teste de conexão Chatwoot
+├── chatwoot-poll/       # Polling de labels Chatwoot
+└── follow-up-send/      # Envio de passo de follow-up
 ```
+
+Todas as Edge Functions leem suas API keys diretamente de `Deno.env.get(...)` — configuradas como secrets no Supabase (Settings → Edge Functions → Environment Variables). Nenhuma key trafega pelo browser.
 
 ---
 
@@ -108,7 +120,6 @@ O PRD completo está em `docs/PRD.md`. Consulte este arquivo antes de implementa
 ## Módulos e Fases
 
 ### Fase 1 — MVP (atual)
-- **Settings:** Configuração de API keys (CNPJá, Apollo, Resend, Chatwoot, WhatsApp)
 - **Consulta CNPJ:** Entrada de CNPJs em lote, filtros de qualificação (regime tributário + porte), processamento via CNPJá com rate-limit handling
 - **Empresas:** Listagem com tabela, filtros, detalhamento, seleção para enriquecimento
 - **Enriquecimento:** Apollo.io para dados de sócios (email, LinkedIn, cargo, telefone)
@@ -140,27 +151,36 @@ O PRD completo está em `docs/PRD.md`. Consulte este arquivo antes de implementa
 
 ## Banco de Dados
 
+### Migrations
+
+Todas as migrations estão em `supabase/migrations/`, aplicadas em ordem:
+
+1. `0001_init.sql` — schema base (14 tabelas de domínio, RLS, helpers, realtime publication).
+2. `0002_profiles_and_roles.sql` — tabela `profiles`, enum `user_role`, helper `is_gestor()` e trigger `handle_new_user` (primeiro registrado vira gestor).
+3. `0003_rls_role_aware.sql` — atualiza policies RLS de todas as tabelas para `auth.uid() = user_id OR public.is_gestor()`.
+4. `0004_drop_settings_table.sql` — remove a tabela `settings` (BYOK em texto plano substituído por `.env` das Edge Functions).
+
 ### Tabelas Principais
 
-- `settings` — API keys e configurações por usuário (RLS por user_id)
+- `profiles` — perfil 1:1 com `auth.users`, contém o `role` (`gestor` | `operacional`)
 - `batches` — Lotes de consulta CNPJ com filtros e progresso
 - `companies` — Empresas consultadas com dados da CNPJá e flag de qualificação
 - `partners` — Sócios das empresas (quadro societário)
 - `lead_lists` — Listas de leads enriquecidos com numeração sequencial
 - `enriched_leads` — Leads enriquecidos com dados do Apollo
-- `email_campaigns` — Campanhas de email (Fase 2)
-- `email_sends` — Envios individuais com tracking de status (Fase 2)
-- `follow_up_sequences` — Sequências de follow-up (Fase 3)
-- `follow_up_steps` — Passos de cada sequência (Fase 3)
-- `follow_up_enrollments` — Leads inscritos em sequências (Fase 3)
+- `email_campaigns` — Campanhas de email
+- `email_sends` — Envios individuais com tracking de status
+- `follow_up_sequences` — Sequências de follow-up
+- `follow_up_steps` — Passos de cada sequência
+- `follow_up_enrollments` — Leads inscritos em sequências
 
 ### Regras
 
-- RLS habilitado em TODAS as tabelas com policy baseada em `auth.uid() = user_id`
-- API keys armazenadas com criptografia (Supabase Vault ou pgcrypto)
+- RLS habilitado em TODAS as tabelas com policy `auth.uid() = user_id OR public.is_gestor()`
+- API keys de integrações ficam em **env vars das Edge Functions** (`Deno.env.get`), nunca no banco nem no browser
 - Índices em: cnpj, batch_id, list_id, campaign_id, lead_id, status
 - Paginação cursor-based em tabelas com mais de 50 registros
-- O SQL completo das migrations está em `database.sql` na raiz do projeto
+- Realtime habilitado em `email_sends`, `batches`, `follow_up_enrollments`, `follow_up_activity_log`
 
 ---
 
@@ -200,17 +220,38 @@ A plataforma NÃO tem agente de IA interno. Não implementar chatbot, IA convers
 
 ## Variáveis de Ambiente
 
-```env
-# .env.local (NÃO commitar)
-VITE_SUPABASE_URL=https://wpagibinplbxehgsuvkt.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwYWdpYmlucGxieGVoZ3N1dmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjMyODUsImV4cCI6MjA4OTQzOTI4NX0.kEth9s4vMgPwABXAv9PyS2e-GDnwu0KRl0HMhmTTqcA
+A lista canônica está em `.env.example`. Resumo:
 
-# Supabase Edge Functions (configurar no dashboard)
-SUPABASE_URL=https://wpagibinplbxehgsuvkt.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwYWdpYmlucGxieGVoZ3N1dmt0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mzg2MzI4NSwiZXhwIjoyMDg5NDM5Mjg1fQ.vZs8R4oHnX7hnhf1TV0DSSKOPJ22XNTXq4BQJScAppE
+### Frontend (`.env.local`, prefixo `VITE_`, públicas)
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_RESEND_FROM_EMAIL=     # default exibido em formulários de campanha
+VITE_RESEND_FROM_NAME=
+VITE_WHATSAPP_LINK=         # default do template {{link_whatsapp}}
 ```
 
-As API keys do CNPJá, Apollo, Resend e Chatwoot ficam no banco (tabela `settings`), NUNCA em variáveis de ambiente do frontend.
+### Edge Functions (configurar como secrets no Supabase)
+
+Settings → Edge Functions → Environment Variables, ou `supabase secrets set NOME=valor`:
+
+```
+CNPJA_API_KEY
+APOLLO_API_KEY
+RESEND_API_KEY
+RESEND_FROM_EMAIL
+RESEND_FROM_NAME
+CHATWOOT_URL
+CHATWOOT_API_TOKEN
+CHATWOOT_ACCOUNT_ID
+CHATWOOT_INBOX_ID
+WHATSAPP_LINK
+```
+
+`SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` são injetadas automaticamente pela plataforma nas Edge Functions — não precisam ser configuradas manualmente.
+
+**Regra crítica:** nenhuma API key de integração (CNPJá, Apollo, Resend, Chatwoot) trafega pelo browser. Todo acesso a essas APIs é proxiado via Edge Functions.
 
 ---
 
@@ -227,9 +268,10 @@ npm run build
 npm run lint
 
 # Deploy Edge Functions
-supabase functions deploy cnpja-lookup
-supabase functions deploy apollo-enrich
+supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send
 
 # Rodar migrations
-# Copiar conteúdo de database.sql e executar no SQL Editor do Supabase
+supabase link --project-ref <project-ref>
+supabase db push
+# (ou colar 0001..0004 manualmente no SQL Editor, em ordem)
 ```
