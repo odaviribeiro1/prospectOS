@@ -25,21 +25,18 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Token inválido' }), { status: 401, headers: corsHeaders })
     }
 
-    const { data: settings } = await supabase
-      .from('settings')
-      .select('chatwoot_url, chatwoot_api_token')
-      .eq('user_id', user.id)
-      .single()
+    const chatwootUrl = Deno.env.get('CHATWOOT_URL')
+    const chatwootApiToken = Deno.env.get('CHATWOOT_API_TOKEN')
 
-    if (!settings?.chatwoot_url || !settings?.chatwoot_api_token) {
+    if (!chatwootUrl || !chatwootApiToken) {
       return new Response(
-        JSON.stringify({ error: 'URL e token do Chatwoot não configurados' }),
-        { status: 400, headers: corsHeaders }
+        JSON.stringify({ error: 'CHATWOOT_URL e CHATWOOT_API_TOKEN não configurados nas variáveis de ambiente da Edge Function' }),
+        { status: 500, headers: corsHeaders }
       )
     }
 
-    const profileRes = await fetch(`${settings.chatwoot_url}/api/v1/profile`, {
-      headers: { api_access_token: settings.chatwoot_api_token },
+    const profileRes = await fetch(`${chatwootUrl}/api/v1/profile`, {
+      headers: { api_access_token: chatwootApiToken },
     })
 
     if (!profileRes.ok) {

@@ -13,13 +13,11 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { batchSchema, type BatchForm } from '../lib/validators'
 import { useProcessBatch, useBatch } from '../hooks/useBatch'
-import { useSettings } from '../hooks/useSettings'
 import { useAppStore } from '../stores/appStore'
 import type { QualificationFilters as Filters } from '../types'
 
 export function ConsultaPage() {
   const { activeBatchId } = useAppStore()
-  const { settings } = useSettings()
   const { data: activeBatch } = useBatch(activeBatchId)
   const { mutateAsync: processBatch, isPending } = useProcessBatch()
 
@@ -40,11 +38,6 @@ export function ConsultaPage() {
   })
 
   const onSubmit = async (data: BatchForm) => {
-    if (!settings?.cnpja_api_key) {
-      toast.error('Configure sua API key do CNPJá em Configurações antes de continuar.')
-      return
-    }
-
     if (cnpjs.length === 0) {
       toast.error('Adicione pelo menos 1 CNPJ válido.')
       return

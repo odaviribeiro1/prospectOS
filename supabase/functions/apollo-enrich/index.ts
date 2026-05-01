@@ -71,21 +71,18 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { company_ids, test } = body
 
-    // Buscar configurações
-    const { data: settings, error: settingsErr } = await supabase
-      .from('settings')
-      .select('apollo_api_key')
-      .eq('user_id', user.id)
-      .single()
-
-    if (settingsErr || !settings?.apollo_api_key) {
-      return new Response(JSON.stringify({ error: 'API key do Apollo não configurada' }), { status: 400, headers: corsHeaders })
+    const apolloApiKey = Deno.env.get('APOLLO_API_KEY')
+    if (!apolloApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'APOLLO_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        { status: 500, headers: corsHeaders }
+      )
     }
 
     // Testar conexão
     if (test) {
       const testRes = await fetch('https://api.apollo.io/api/v1/auth/health', {
-        headers: { 'Cache-Control': 'no-cache', 'X-Api-Key': settings.apollo_api_key },
+        headers: { 'Cache-Control': 'no-cache', 'X-Api-Key': apolloApiKey },
       })
       if (!testRes.ok) {
         return new Response(JSON.stringify({ error: `Apollo retornou: ${testRes.status}` }), { headers: corsHeaders })
@@ -153,7 +150,7 @@ Deno.serve(async (req) => {
         }
 
         const apolloData = await apolloPersonMatch(
-          settings.apollo_api_key,
+          apolloApiKey,
           firstName,
           lastName,
           orgName,

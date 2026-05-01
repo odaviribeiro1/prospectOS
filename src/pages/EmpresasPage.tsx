@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
 import { useCompanies } from '../hooks/useCompanies'
 import { useEnrichment } from '../hooks/useEnrichment'
-import { useSettings } from '../hooks/useSettings'
 import { useBatches } from '../hooks/useBatch'
 import { formatCnpj, REGIME_LABELS, PORTE_LABELS } from '../lib/utils'
 import type { Company } from '../types'
@@ -44,7 +43,6 @@ export function EmpresasPage() {
   const { data: companies = [], isLoading } = useCompanies({ search, qualified, batch_id: batchFilter })
   const { data: batches = [] } = useBatches()
   const { enrichCompanies, isPending: isEnriching } = useEnrichment()
-  const { settings } = useSettings()
 
   const selectedIds = Object.entries(rowSelection).filter(([, v]) => v).map(([k]) => k)
   const selectedQualified = companies.filter(c => selectedIds.includes(c.id) && c.qualified)
@@ -133,10 +131,6 @@ export function EmpresasPage() {
   })
 
   const handleEnrich = async () => {
-    if (!settings?.apollo_api_key) {
-      toast.error('Configure sua API key do Apollo.io em Configurações antes de continuar.')
-      return
-    }
     const ids = selectedQualified.map(c => c.id)
     setEnrichOpen(true)
     try {

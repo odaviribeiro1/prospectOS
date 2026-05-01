@@ -44,14 +44,18 @@ Deno.serve(async (req) => {
     const currentStep = steps.find((s: { step_number: number }) => s.step_number === enrollment.current_step)
     if (!currentStep) return new Response(JSON.stringify({ error: 'Passo não encontrado' }), { status: 404, headers: corsHeaders })
 
-    // Load settings
-    const { data: settings } = await supabase
-      .from('settings')
-      .select('resend_api_key, resend_from_email, resend_from_name, whatsapp_link, chatwoot_url, chatwoot_api_token, chatwoot_account_id')
-      .eq('user_id', user.id)
-      .single()
+    // Read env vars
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const resendFromEmail = Deno.env.get('RESEND_FROM_EMAIL')
+    const resendFromName = Deno.env.get('RESEND_FROM_NAME')
+    const whatsappLink = Deno.env.get('WHATSAPP_LINK') ?? ''
 
-    if (!settings?.resend_api_key) return new Response(JSON.stringify({ error: 'Resend API key não configurada' }), { status: 400, headers: corsHeaders })
+    if (!resendApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'RESEND_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        { status: 500, headers: corsHeaders }
+      )
+    }
 
     // Check condition (no_reply / no_open)
     if (currentStep.condition !== 'always') {
@@ -84,7 +88,7 @@ Deno.serve(async (req) => {
       empresa: lead.empresa_nome || '',
       cargo: lead.cargo || '',
       email: lead.email || '',
-      link_whatsapp: settings.whatsapp_link || '',
+      link_whatsapp: whatsappLink,
     }
     const render = (t: string) => Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{{${k}}}`, v), t)
     const subjectRendered = render(currentStep.subject)
@@ -95,10 +99,10 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${settings.resend_api_key}`,
+        'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: `${settings.resend_from_name} <${settings.resend_from_email}>`,
+        from: `${resendFromName || 'Agentise Leads'} <${resendFromEmail || 'onboarding@resend.dev'}>`,
         to: [`${lead.nome} <${lead.email}>`],
         subject: subjectRendered,
         html: bodyRendered,

@@ -15,9 +15,6 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { key: 'hasApiKeys', label: 'Configurar API Keys (CNPJá + Apollo)', href: '/settings' },
-  { key: 'hasResend', label: 'Configurar Resend para envio de e-mails', href: '/settings' },
-  { key: 'hasChatwoot', label: 'Configurar Chatwoot (opcional)', href: '/settings', optional: true },
   { key: 'hasFirstBatch', label: 'Realizar primeira consulta de CNPJ', href: '/consulta' },
   { key: 'hasFirstList', label: 'Enriquecer e revisar leads', href: '/listas' },
   { key: 'hasFirstCampaign', label: 'Enviar primeira campanha de e-mail', href: '/campanhas' },

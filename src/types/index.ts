@@ -26,25 +26,6 @@ export interface Profile {
   updated_at: string
 }
 
-// ---- Settings -----------------------------------------------
-export interface Settings {
-  id: string
-  user_id: string
-  cnpja_api_key: string | null
-  apollo_api_key: string | null
-  resend_api_key: string | null
-  resend_from_email: string | null
-  resend_from_name: string | null
-  chatwoot_url: string | null
-  chatwoot_api_token: string | null
-  chatwoot_account_id: number | null
-  chatwoot_inbox_id: number | null
-  whatsapp_link: string | null
-  negative_response_polling_interval: number
-  created_at: string
-  updated_at: string
-}
-
 // ---- Batch --------------------------------------------------
 export interface Batch {
   id: string

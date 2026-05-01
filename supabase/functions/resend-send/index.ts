@@ -81,16 +81,19 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { campaign_id, test } = body
 
-    const { data: settings, error: settingsErr } = await supabase
-      .from('settings')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const resendFromEmail = Deno.env.get('RESEND_FROM_EMAIL')
+    const resendFromName = Deno.env.get('RESEND_FROM_NAME')
+    const whatsappLink = Deno.env.get('WHATSAPP_LINK') ?? ''
+    const chatwootUrl = Deno.env.get('CHATWOOT_URL')
+    const chatwootApiToken = Deno.env.get('CHATWOOT_API_TOKEN')
+    const chatwootAccountIdRaw = Deno.env.get('CHATWOOT_ACCOUNT_ID')
+    const chatwootAccountId = chatwootAccountIdRaw ? Number(chatwootAccountIdRaw) : null
 
-    if (settingsErr || !settings?.resend_api_key) {
+    if (!resendApiKey) {
       return new Response(
-        JSON.stringify({ error: 'API key do Resend não configurada. Acesse Configurações.' }),
-        { status: 400, headers: corsHeaders }
+        JSON.stringify({ error: 'RESEND_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        { status: 500, headers: corsHeaders }
       )
     }
 
@@ -99,11 +102,11 @@ Deno.serve(async (req) => {
       const testRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${settings.resend_api_key}`,
+          Authorization: `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `${settings.resend_from_name || 'Agentise Leads'} <${settings.resend_from_email || 'onboarding@resend.dev'}>`,
+          from: `${resendFromName || 'Agentise Leads'} <${resendFromEmail || 'onboarding@resend.dev'}>`,
           to: [user.email!],
           subject: 'Agentise Leads — Conexão Resend OK',
           html: '<p>Se você está lendo este e-mail, a integração com Resend está funcionando corretamente.</p>',
@@ -158,7 +161,7 @@ Deno.serve(async (req) => {
       .update({ status: 'sending', sent_at: new Date().toISOString(), total_recipients: leads.length })
       .eq('id', campaign_id)
 
-    const hasChatwoot = !!(settings.chatwoot_url && settings.chatwoot_api_token && settings.chatwoot_account_id)
+    const hasChatwoot = !!(chatwootUrl && chatwootApiToken && chatwootAccountId)
     let sentCount = 0
     let failedCount = 0
 
@@ -171,7 +174,7 @@ Deno.serve(async (req) => {
           empresa: (lead.empresa_nome as string) || '',
           cargo: (lead.cargo as string) || '',
           email: (lead.email as string) || '',
-          link_whatsapp: campaign.whatsapp_link || settings.whatsapp_link || '',
+          link_whatsapp: campaign.whatsapp_link || whatsappLink,
         }
 
         const subjectRendered = renderTemplate(campaign.subject, vars)
@@ -197,11 +200,11 @@ Deno.serve(async (req) => {
         const sendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${settings.resend_api_key}`,
+            Authorization: `Bearer ${resendApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `${campaign.from_name} <${campaign.from_email}>`,
+            from: `${campaign.from_name || resendFromName || 'Agentise Leads'} <${campaign.from_email || resendFromEmail || 'onboarding@resend.dev'}>`,
             to: [lead.email],
             subject: subjectRendered,
             html: bodyRendered,
@@ -222,9 +225,9 @@ Deno.serve(async (req) => {
 
           if (hasChatwoot) {
             const contactId = await createOrGetChatwootContact(
-              settings.chatwoot_url,
-              settings.chatwoot_api_token,
-              settings.chatwoot_account_id,
+              chatwootUrl!,
+              chatwootApiToken!,
+              chatwootAccountId!,
               lead,
               campaign_id
             )
