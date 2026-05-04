@@ -48,3 +48,6 @@ supabase/.env
 secrets.json
 credentials.json
 config.local.json
+
+# Arquivo local de rotação de credenciais — não commitar
+ROTATION_CHECKLIST.md
