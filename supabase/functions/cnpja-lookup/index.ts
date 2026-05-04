@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     const cnpjaApiKey = Deno.env.get('CNPJA_API_KEY')
     if (!cnpjaApiKey) {
       return new Response(
-        JSON.stringify({ error: 'CNPJA_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        JSON.stringify({ error: 'CNPJA_API_KEY não configurada. Configure em Supabase Dashboard → Project Settings → Edge Functions → Secrets.' }),
         { status: 500, headers: corsHeaders }
       )
     }

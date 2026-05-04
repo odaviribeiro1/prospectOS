@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     const apolloApiKey = Deno.env.get('APOLLO_API_KEY')
     if (!apolloApiKey) {
       return new Response(
-        JSON.stringify({ error: 'APOLLO_API_KEY não configurada nas variáveis de ambiente da Edge Function' }),
+        JSON.stringify({ error: 'APOLLO_API_KEY não configurada. Configure em Supabase Dashboard → Project Settings → Edge Functions → Secrets.' }),
         { status: 500, headers: corsHeaders }
       )
     }

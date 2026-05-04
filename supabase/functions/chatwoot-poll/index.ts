@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     if (!chatwootUrl || !chatwootApiToken || !chatwootAccountId) {
       return new Response(
         JSON.stringify({
-          error: 'CHATWOOT_URL, CHATWOOT_API_TOKEN e CHATWOOT_ACCOUNT_ID são obrigatórios nas variáveis de ambiente da Edge Function',
+          error: 'CHATWOOT_URL, CHATWOOT_API_TOKEN e CHATWOOT_ACCOUNT_ID são obrigatórios. Configure em Supabase Dashboard → Project Settings → Edge Functions → Secrets.',
         }),
         { status: 500, headers: corsHeaders }
       )

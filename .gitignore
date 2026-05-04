@@ -25,10 +25,26 @@ dist-ssr
 
 # Supabase Local
 supabase/.temp/
+supabase/.branches/
 supabase/db/
 supabase/.env
 
-# Env files
+# Env files (mantém apenas o template)
 .env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+.env.supabase
+.env.functions
 .env.*
+*.env
 !.env.example
+
+# Credenciais e secrets diversos
+*.pem
+*.key
+secrets.json
+credentials.json
+config.local.json
