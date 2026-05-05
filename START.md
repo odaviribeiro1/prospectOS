@@ -10,7 +10,7 @@
 > 6. Digite na sessão: **"Leia o arquivo START.md e execute tudo"**
 > 7. Responda às perguntas conforme Claude Code as faz.
 >
-> Em ~10 minutos, sua instância estará configurada: migrations aplicadas, Edge Functions deployadas, secrets configuradas, conta de gestor criada. Depois é só fazer o deploy do frontend na Vercel.
+> Em ~10 minutos, sua instância estará configurada: migrations aplicadas, Edge Functions deployadas, secrets configuradas, conta de owner criada. Depois é só fazer o deploy do frontend na Vercel. A partir do segundo usuário, self-signup fecha e novos membros só entram via convite gerado pelo owner em `/equipe`.
 
 ---
 
@@ -33,6 +33,7 @@
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME` — https://resend.com/api-keys
 - `CHATWOOT_URL`, `CHATWOOT_API_TOKEN`, `CHATWOOT_ACCOUNT_ID`, `CHATWOOT_INBOX_ID` — Chatwoot Dashboard → Profile → Access Token
 - `WHATSAPP_LINK` — link de WhatsApp default usado em `{{link_whatsapp}}` nos templates de e-mail
+- `APP_URL` — URL pública do frontend deployado na Vercel (ex.: `https://seu-projeto.vercel.app`). Usada pela Edge Function `create-invite` para gerar o link do convite enviado por e-mail. Pode ser configurada depois do deploy do frontend.
 
 ---
 
@@ -66,7 +67,7 @@ Você é responsável por configurar o projeto **Agentise Leads** (boilerplate s
 Mostre ao aluno em uma única mensagem:
 - Projeto detectado: `agentise-leads`
 - 5 variáveis frontend (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_RESEND_FROM_EMAIL`, `VITE_RESEND_FROM_NAME`, `VITE_WHATSAPP_LINK`)
-- 10 secrets de Edge Functions (CNPJA_API_KEY, APOLLO_API_KEY, RESEND_*, CHATWOOT_*, WHATSAPP_LINK)
+- 11 secrets de Edge Functions (CNPJA_API_KEY, APOLLO_API_KEY, RESEND_*, CHATWOOT_*, WHATSAPP_LINK, APP_URL)
 - Aviso: "Vou pedir cada credencial uma por vez. Você pode pausar e retomar depois — nada é gravado até a confirmação final."
 
 Aguarde "ok" / "vai" / "pode" antes de prosseguir.
@@ -166,7 +167,7 @@ Liste **as ações que serão executadas** em ordem:
 2. Rodar `npm install` se `node_modules/` não existir.
 3. Linkar projeto: `supabase link --project-ref {PROJECT_REF}`.
 4. Aplicar migrations: `supabase db push`.
-5. Deployar Edge Functions: `supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send`.
+5. Deployar Edge Functions: `supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send create-invite revoke-invite`.
 6. Configurar secrets via Management API (`PATCH /v1/projects/{ref}/secrets`).
 7. Criar usuário gestor via Auth Admin API.
 8. Validar que o trigger `handle_new_user` promoveu para `role = 'gestor'`.
@@ -217,6 +218,7 @@ Se falhar, capturar erro e oferecer retry/abortar.
 SUPABASE_ACCESS_TOKEN={ACCESS_TOKEN} supabase functions deploy \
   cnpja-lookup apollo-enrich resend-send resend-webhook \
   chatwoot-test chatwoot-poll follow-up-send \
+  create-invite revoke-invite \
   --project-ref {PROJECT_REF}
 ```
 

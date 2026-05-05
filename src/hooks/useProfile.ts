@@ -20,7 +20,8 @@ export function useProfile() {
     },
   })
 
-  const isGestor = profile?.role === 'gestor'
+  const isOwner = profile?.role === 'owner' || profile?.role === 'gestor'
+  const isGestor = isOwner
 
-  return { profile, isLoading, isGestor }
+  return { profile, isLoading, isOwner, isGestor }
 }

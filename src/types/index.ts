@@ -16,7 +16,10 @@ export type LeadStatus =
   | 'converted'
 
 // ---- Profile / Roles ----------------------------------------
-export type UserRole = 'gestor' | 'operacional'
+// 'owner' e 'member' são os roles canônicos a partir da migration 0005.
+// 'gestor' e 'operacional' permanecem como aliases legados — o helper
+// is_gestor() do banco trata 'owner' como gestor para compatibilidade.
+export type UserRole = 'owner' | 'member' | 'gestor' | 'operacional'
 
 export interface Profile {
   id: string
@@ -24,6 +27,19 @@ export interface Profile {
   display_name: string | null
   created_at: string
   updated_at: string
+}
+
+// ---- Invites -------------------------------------------------
+export interface Invite {
+  id: string
+  email: string
+  token: string
+  role: 'member' | 'owner'
+  invited_by: string | null
+  expires_at: string
+  used_at: string | null
+  revoked_at: string | null
+  created_at: string
 }
 
 // ---- Batch --------------------------------------------------

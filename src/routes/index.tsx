@@ -6,10 +6,12 @@ import { Skeleton } from '../components/ui/skeleton'
 // Public pages — small, load immediately
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
+import { InvitePage } from '../pages/InvitePage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 // Lazy-loaded app pages
 const MetricasPage = lazy(() => import('../pages/MetricasPage').then(m => ({ default: m.MetricasPage })))
+const TeamPage = lazy(() => import('../pages/TeamPage').then(m => ({ default: m.TeamPage })))
 const ConsultaPage = lazy(() => import('../pages/ConsultaPage').then(m => ({ default: m.ConsultaPage })))
 const EmpresasPage = lazy(() => import('../pages/EmpresasPage').then(m => ({ default: m.EmpresasPage })))
 const ListasPage = lazy(() => import('../pages/ListasPage').then(m => ({ default: m.ListasPage })))
@@ -41,6 +43,7 @@ function LazyRoute({ element }: { element: React.ReactNode }) {
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/registro', element: <RegisterPage /> },
+  { path: '/invite', element: <InvitePage /> },
   {
     path: '/',
     element: <AppLayout />,
@@ -60,6 +63,7 @@ export const router = createBrowserRouter([
       { path: 'follow-ups/sequencias/:id', element: <LazyRoute element={<SequenciaDetalhePage />} /> },
       { path: 'follow-ups/sequencias/:id/editar', element: <LazyRoute element={<NovaSequenciaPage />} /> },
       { path: 'perfil', element: <LazyRoute element={<ProfilePage />} /> },
+      { path: 'equipe', element: <LazyRoute element={<TeamPage />} /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

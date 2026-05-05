@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Search, Building2, List, BarChart3, Mail,
   Target, ChevronLeft, ChevronRight, LogOut, Forward, User,
-  Sun, Moon,
+  Sun, Moon, Users,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../stores/appStore'
@@ -14,6 +14,7 @@ import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
 import { useState, useEffect } from 'react'
 import { usePendingCount } from '../../hooks/useEnrollments'
+import { useProfile } from '../../hooks/useProfile'
 
 const menuItems = [
   { icon: BarChart3, label: 'Dashboard', path: '/metricas' },
@@ -28,11 +29,16 @@ const bottomItems = [
   { icon: User, label: 'Meu Perfil', path: '/perfil' },
 ]
 
+const ownerItems = [
+  { icon: Users, label: 'Equipe', path: '/equipe' },
+]
+
 export function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useAppStore()
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState('')
   const { data: pendingCount = 0 } = usePendingCount()
+  const { isOwner } = useProfile()
 
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'))
 
@@ -68,7 +74,7 @@ export function Sidebar() {
 
   const initials = userEmail ? userEmail.slice(0, 2).toUpperCase() : '?'
 
-  const allItems = [...menuItems, ...bottomItems]
+  const allItems = [...menuItems, ...(isOwner ? ownerItems : []), ...bottomItems]
 
   return (
     <TooltipProvider delayDuration={300}>

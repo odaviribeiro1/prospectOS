@@ -68,14 +68,14 @@ supabase link --project-ref <seu-project-ref>
 supabase db push
 
 # Deploy de Edge Functions
-supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send
+supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send create-invite revoke-invite
 ```
 
 Configure as secrets das Edge Functions manualmente em **Supabase Dashboard → Project Settings → Edge Functions → Secrets** (lista no `.env.example` grupo "Edge Functions Secrets"). Habilite **Realtime** em `Database → Replication → supabase_realtime` para `email_sends`, `batches`, `follow_up_enrollments`, `follow_up_activity_log`.
 
 Deploy do frontend na Vercel: import do fork, preencha as `VITE_*` em **Environment Variables** e Deploy.
 
-Crie sua conta de gestor acessando a URL deployada e cadastrando-se na tela de registro — o primeiro usuário vira `gestor` automaticamente via trigger `handle_new_user`.
+Crie sua conta de owner acessando a URL deployada e cadastrando-se na tela de registro — o primeiro usuário vira `owner` automaticamente via trigger `handle_new_user`. A partir do segundo usuário, self-signup fecha e novos membros só entram via convite gerado pelo owner em `/equipe`.
 
 ### Modo dev local
 
@@ -87,6 +87,24 @@ npm run dev      # Servidor de desenvolvimento
 npm run build    # Build de produção (tsc -b + vite build)
 npm run lint     # ESLint
 ```
+
+## 🔄 Atualizar para a versão mais recente
+
+Quando o upstream tiver atualizações novas:
+
+1. No seu fork no GitHub, clique em **"Sync fork"** (botão no topo do repo).
+2. No terminal, dentro do projeto: `git pull`.
+3. Abra Claude Code: `claude`.
+4. Digite: **"Leia o arquivo UPDATE.md e execute tudo"**.
+5. Pronto. Migrations novas aplicadas, Edge Functions redeployadas, frontend redeploya sozinho na Vercel.
+
+Veja [`UPDATE.md`](./UPDATE.md) para detalhes.
+
+## 🛠️ Customizando o código
+
+Se você quer fazer customizações no código (não apenas via UI da aplicação), faça em [`src/customizations/`](./src/customizations/). Esse diretório é "zona livre" — o upstream nunca edita arquivos lá, evitando conflitos quando você atualizar.
+
+Veja [`src/customizations/README.md`](./src/customizations/README.md) para detalhes.
 
 ## Roles & permissões
 

@@ -43,3 +43,9 @@ Mensagem em PT-BR, no infinitivo. Ex.: `feat: adicionar exportação de leads em
 ## Reportando issues
 
 Abra uma issue com **descrição** (o que aconteceu vs. esperado), **reprodução** (passos numerados) e **ambiente** (Node, navegador, SO). Para vulnerabilidades, não abra issue pública — envie e-mail para `seguranca@agentise.com.br`.
+
+## Customizando sem conflitos
+
+Toda customização que você fizer deve ficar em `src/customizations/`. Esse diretório é "zona livre" — o upstream nunca edita nada lá. Garante que `git pull` (após sync do fork) não gere conflito.
+
+Para mais detalhes, leia [`src/customizations/README.md`](./src/customizations/README.md).
