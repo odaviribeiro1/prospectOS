@@ -35,21 +35,21 @@ supabase/
 
 Este projeto é self-hosted. Cada usuário roda própria instância em Supabase + Vercel. Setup completo em ~15 minutos.
 
-### Caminho recomendado: setup interativo via Claude Code
+### Caminho recomendado: setup automático via Claude Code
 
-Se você tem [Claude Code](https://claude.com/claude-code) instalado, esse é o caminho mais simples — Claude Code te pergunta cada credencial, valida tudo e configura sua instância sozinho.
+Se você tem [Claude Code](https://claude.com/claude-code) instalado, esse é o caminho mais simples — Claude Code lê o [`START.md`](./START.md) deste repositório, te pergunta cada credencial, valida tudo e configura sua instância sozinho.
 
 1. Crie um projeto novo no Supabase em https://supabase.com/dashboard.
 2. Faça fork deste repositório no GitHub.
 3. Clone o seu fork localmente: `git clone https://github.com/<seu-usuario>/agentise-leads.git`.
 4. Entre na pasta: `cd agentise-leads`.
 5. Abra Claude Code: `claude`.
-6. Abra o arquivo [`BOOTSTRAP.md`](./BOOTSTRAP.md), copie a partir de "Prompt para Claude Code", e cole na sessão.
+6. Digite na sessão: **"Leia o arquivo START.md e execute tudo"**.
 7. Responda às perguntas — Claude Code aplica migrations, deploya as 7 Edge Functions, configura secrets via Management API e cria seu gestor.
 8. Quando terminar, faça deploy do frontend na Vercel preenchendo `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (Claude Code te lembra desses valores no relatório final).
 9. Acesse a URL gerada pela Vercel e faça login com o gestor criado.
 
-Veja [`BOOTSTRAP.md`](./BOOTSTRAP.md) para o prompt completo.
+Veja [`START.md`](./START.md) para a lista de credenciais que você precisa ter em mãos antes de começar.
 
 ### Caminho manual (sem Claude Code)
 

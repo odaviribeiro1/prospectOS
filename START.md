@@ -1,50 +1,44 @@
-# BOOTSTRAP — Setup interativo via Claude Code
+# START — Setup da sua instância
 
-> Este arquivo contém um prompt pronto para você colar em uma sessão de Claude Code rodando na pasta deste repositório recém-clonado.
+> Bem-vindo! Este arquivo configura sua instância do **Agentise Leads** na sua infraestrutura Supabase + Vercel.
 >
-> Em ~10 minutos, Claude Code vai te perguntar suas credenciais uma a uma, configurar seu projeto Supabase, aplicar todas as migrations, deployar as Edge Functions, configurar as secrets, criar sua conta de gestor, e te entregar o passo a passo do deploy do frontend na Vercel.
+> 1. Crie um projeto novo no Supabase em https://supabase.com/dashboard (anote URL, anon key, service_role key e Project Reference em Project Settings → API e General).
+> 2. Crie um Personal Access Token Supabase em https://supabase.com/dashboard/account/tokens (escopo "All access").
+> 3. Tenha em mãos as chaves de API dos providers que este projeto usa (lista mais abaixo).
+> 4. Abra um terminal na raiz deste repositório clonado.
+> 5. Execute `claude` (Claude Code precisa estar instalado e autorizado).
+> 6. Digite na sessão: **"Leia o arquivo START.md e execute tudo"**
+> 7. Responda às perguntas conforme Claude Code as faz.
 >
-> Pré-requisitos: Node 20+, [Claude Code](https://claude.com/claude-code) instalado e autorizado, [Supabase CLI](https://supabase.com/docs/guides/cli) instalada, git, e este repositório clonado.
-
----
-
-## Como usar
-
-1. Crie um projeto novo no Supabase em https://supabase.com/dashboard. Anote o Project Reference (Project Settings → General → Reference ID).
-2. Crie um Personal Access Token Supabase em https://supabase.com/dashboard/account/tokens. Marque escopo "All access". Anote o token (formato `sbp_...`).
-3. Tenha em mãos as chaves de API dos providers que este projeto usa (lista completa abaixo).
-4. Abra um terminal na raiz deste repositório.
-5. Execute `claude` (precisa estar instalado e autorizado).
-6. Cole o prompt completo abaixo (a partir da linha "Prompt para Claude Code") na sessão.
-7. Responda às perguntas conforme Claude Code as faz, uma a uma.
+> Em ~10 minutos, sua instância estará configurada: migrations aplicadas, Edge Functions deployadas, secrets configuradas, conta de gestor criada. Depois é só fazer o deploy do frontend na Vercel.
 
 ---
 
 ## Credenciais que serão pedidas
 
 **Supabase (obrigatórias):**
-- **Supabase URL** — formato `https://xxxxxxxxxxxxxxxxxxxxxx.supabase.co`. Project Settings → API → Project URL.
-- **Supabase anon key** — JWT longo. Project Settings → API → Project API keys → `anon` `public`.
-- **Supabase service_role key** — JWT longo (manter em sigilo). Project Settings → API → Project API keys → `service_role` `secret`.
-- **Supabase Project Reference** — código de 20 letras tipo `xhznjliwxbosunwrcaut`. Project Settings → General → Reference ID.
-- **Supabase Personal Access Token** — formato `sbp_...`. https://supabase.com/dashboard/account/tokens.
+- **Supabase URL** — formato `https://xxxxxxxxxxxxxxxxxxxxxx.supabase.co`. Em Project Settings → API → Project URL.
+- **Supabase anon key** — JWT longo. Em Project Settings → API → Project API keys → `anon` `public`.
+- **Supabase service_role key** — JWT longo (manter em sigilo). Em Project Settings → API → Project API keys → `service_role` `secret`.
+- **Supabase Project Reference** — código de 20 letras tipo `xhznjliwxbosunwrcaut`. Em Project Settings → General → Reference ID.
+- **Supabase Personal Access Token** — formato `sbp_...`. Em https://supabase.com/dashboard/account/tokens.
 
 **Conta gestor (obrigatórias):**
 - **E-mail** que você vai usar como gestor desta instância.
 - **Senha** (mínimo 8 caracteres).
 
 **Edge Functions Secrets (opcionais — pode pular e configurar depois):**
-- **CNPJa** — `CNPJA_API_KEY`. https://cnpja.com (Dashboard → API Keys).
-- **Apollo.io** — `APOLLO_API_KEY`. https://app.apollo.io/#/settings/integrations/api.
-- **Resend** — `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`. https://resend.com/api-keys.
-- **Chatwoot** — `CHATWOOT_URL`, `CHATWOOT_API_TOKEN`, `CHATWOOT_ACCOUNT_ID`, `CHATWOOT_INBOX_ID`. Chatwoot Dashboard → Profile → Access Token.
-- **WhatsApp** — `WHATSAPP_LINK`. Link de WhatsApp default usado nos templates de e-mail.
+- `CNPJA_API_KEY` — https://cnpja.com (Dashboard → API Keys)
+- `APOLLO_API_KEY` — https://app.apollo.io/#/settings/integrations/api
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME` — https://resend.com/api-keys
+- `CHATWOOT_URL`, `CHATWOOT_API_TOKEN`, `CHATWOOT_ACCOUNT_ID`, `CHATWOOT_INBOX_ID` — Chatwoot Dashboard → Profile → Access Token
+- `WHATSAPP_LINK` — link de WhatsApp default usado em `{{link_whatsapp}}` nos templates de e-mail
 
 ---
 
-## Prompt para Claude Code
+## Instruções para Claude Code
 
-> Cole tudo abaixo desta linha na sessão Claude Code aberta na raiz deste repositório.
+> A partir daqui, este arquivo é lido pelo Claude Code do aluno e contém as instruções que você (Claude Code) deve executar quando o aluno disser "leia START.md e execute tudo". Siga rigorosamente.
 
 Você é responsável por configurar o projeto **Agentise Leads** (boilerplate self-hosted de prospecção outbound B2B) na infraestrutura Supabase do usuário (aluno). O fluxo é interativo: pergunte uma credencial por vez, valide imediatamente, e só ao final aplique mudanças no Supabase do usuário.
 
@@ -62,8 +56,8 @@ Você é responsável por configurar o projeto **Agentise Leads** (boilerplate s
 1. Confirmar `node --version` retorna 20+.
 2. Confirmar `supabase --version` (CLI Supabase instalada). Se não estiver, instruir: `npm install -g supabase` e parar até o aluno instalar.
 3. Confirmar `pwd` está na raiz do repositório `agentise-leads` (existe `package.json` com `"name": "agentise-leads"` e pasta `supabase/migrations/` com 4 arquivos `0001..0004`).
-4. `git status` deve estar limpo.
-5. Ler `.env.example` na raiz e listar **todas** as variáveis que o projeto declara, agrupadas em 3 grupos (Frontend / Edge Functions Secrets / Scripts).
+4. `git status` deve estar limpo (não obrigatório, mas alertar se sujo).
+5. Ler `.env.example` na raiz e listar todas as variáveis em 3 grupos (Frontend / Edge Functions Secrets / Scripts).
 
 ### Sequência interativa
 
@@ -146,7 +140,7 @@ Para **cada secret** abaixo, perguntar uma a uma. Mostrar nome, descrição e li
 | `CHATWOOT_INBOX_ID` | ID da inbox de e-mail | Chatwoot → Inboxes | número inteiro |
 | `WHATSAPP_LINK` | Link WhatsApp default usado em `{{link_whatsapp}}` | (você define) | regex URL https |
 
-Para **VITE_RESEND_FROM_EMAIL**, **VITE_RESEND_FROM_NAME** e **VITE_WHATSAPP_LINK** (frontend), usar os mesmos valores informados acima ou perguntar separadamente. São opcionais.
+Para `VITE_RESEND_FROM_EMAIL`, `VITE_RESEND_FROM_NAME` e `VITE_WHATSAPP_LINK` (frontend), reutilize os mesmos valores informados acima ou pergunte separadamente. São opcionais.
 
 #### Passo 8 — Conta gestor
 
@@ -170,7 +164,7 @@ Liste **as ações que serão executadas** em ordem:
 
 1. Criar `.env` na raiz com `VITE_*`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`.
 2. Rodar `npm install` se `node_modules/` não existir.
-3. Linkar projeto: `supabase link --project-ref {PROJECT_REF}` (vai pedir o access token).
+3. Linkar projeto: `supabase link --project-ref {PROJECT_REF}`.
 4. Aplicar migrations: `supabase db push`.
 5. Deployar Edge Functions: `supabase functions deploy cnpja-lookup apollo-enrich resend-send resend-webhook chatwoot-test chatwoot-poll follow-up-send`.
 6. Configurar secrets via Management API (`PATCH /v1/projects/{ref}/secrets`).
@@ -228,16 +222,16 @@ SUPABASE_ACCESS_TOKEN={ACCESS_TOKEN} supabase functions deploy \
 
 **10.6 — Configurar secrets via Management API**
 
-Para cada secret não-pulada, fazer um `PATCH`:
+Para cada secret não-pulada, fazer um `PATCH`. Pode batchar todas em um único request com array:
 
 ```bash
 curl -X PATCH "https://api.supabase.com/v1/projects/{PROJECT_REF}/secrets" \
   -H "Authorization: Bearer {ACCESS_TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '[{"name":"NOME","value":"VALOR"}]'
+  -d '[{"name":"NOME","value":"VALOR"}, ...]'
 ```
 
-Pode batchar todas em um único request com array.
+Verificar resposta `200`. Se `401` ou outro erro, capturar e tratar.
 
 **10.7 — Criar gestor**
 
